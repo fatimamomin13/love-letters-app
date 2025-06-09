@@ -14,8 +14,9 @@ export default function Home() {
 	const [isDownloadingFromPreview, setIsDownloadingFromPreview] =
 		useState(false);
 	const [backgroundLoaded, setBackgroundLoaded] = useState(false);
+	const [isEnhancing, setIsEnhancing] = useState(false);
 
-	const MAX_CHARS = 700;
+	const MAX_CHARS = 800;
 	const MIN_CHARS = 200;
 
 	useEffect(() => {
@@ -121,6 +122,58 @@ export default function Home() {
 		}
 	};
 
+	// AI Enhancement function
+	const handleEnhanceWithAI = async () => {
+		if (!message.trim()) {
+			alert("Please write a message first before enhancing it with AI.");
+			return;
+		}
+
+		if (message.length < 20) {
+			alert("Please write at least a few sentences for AI to enhance.");
+			return;
+		}
+
+		setIsEnhancing(true);
+
+		try {
+			const res = await fetch("/api/enhance-letter", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					message,
+					letterTo: letterTo || "your loved one",
+					letterFrom: letterFrom || "the sender",
+				}),
+			});
+
+			if (!res.ok) {
+				const errorData = await res.json();
+				throw new Error(errorData.error || "Failed to enhance letter");
+			}
+
+			const data = await res.json();
+
+			if (data.enhancedMessage) {
+				// Ensure the enhanced message doesn't exceed character limit
+				const enhancedMessage =
+					data.enhancedMessage.length > MAX_CHARS
+						? data.enhancedMessage.substring(0, MAX_CHARS - 3) +
+						  "..."
+						: data.enhancedMessage;
+
+				setMessage(enhancedMessage);
+			} else {
+				throw new Error("No enhanced message received");
+			}
+		} catch (error) {
+			console.error("Enhancement error:", error);
+			alert("Error enhancing letter with AI. Please try again.");
+		} finally {
+			setIsEnhancing(false);
+		}
+	};
+
 	const handlePreview = () => {
 		// Only show preview if we have the required fields
 		if (letterTo && letterFrom && message) {
@@ -222,11 +275,31 @@ export default function Home() {
 				<div className="max-w-2xl mx-auto">
 					{/* Header */}
 					<div className="text-center mb-8">
-						<h1 className="text-4xl md:text-5xl font-serif text-stone-800 mb-2 drop-shadow-sm">
-							Love Letters
+						<h1
+							className="text-4xl md:text-7xl font-serif text-stone-800 mb-4 
+							tracking-wide leading-tight drop-shadow-lg
+							bg-gradient-to-b from-amber-900 via-stone-800 to-amber-900 
+							bg-clip-text text-transparent
+							relative after:content-[''] after:absolute after:left-1/2 
+							after:transform after:-translate-x-1/2 after:bottom-0 
+							after:w-24 after:h-0.5 after:bg-gradient-to-r 
+							after:from-transparent after:via-amber-600 after:to-transparent
+							after:rounded-full"
+						>
+							Letters & Quill
 						</h1>
-						<p className="text-stone-700 text-lg font-light drop-shadow-sm">
-							Pour your heart onto paper
+						<p
+							className="text-stone-600 text-xl md:text-2xl font-light italic 
+							tracking-widest drop-shadow-md mt-6
+							relative before:absolute before:-left-8 
+							before:top-1/2 before:transform before:-translate-y-1/2 
+							before:text-amber-500 before:text-sm
+						 after:absolute after:-right-8 
+							after:top-1/2 after:transform after:-translate-y-1/2 
+							after:text-amber-500 after:text-sm
+							font-serif opacity-90"
+						>
+							The timeless art of handwritten thoughts
 						</p>
 					</div>
 
@@ -299,18 +372,51 @@ export default function Home() {
 								<label className="block text-stone-800 font-semibold text-sm tracking-wide">
 									Your Letter
 								</label>
-								<textarea
-									name="Letter"
-									id="message"
-									rows={8}
-									placeholder="Pour your heart out here... Share specific memories, what you love about them, how they make you feel..."
-									value={message}
-									onChange={handleMessageChange}
-									className="w-full px-4 py-3 bg-white/90 border border-stone-300/60 rounded-xl 
-                    focus:ring-2 focus:ring-amber-300 focus:border-amber-400 
-                    transition-all duration-200 placeholder-stone-400 text-stone-800
-                    font-light tracking-wide resize-none shadow-sm"
-								/>
+								<div className="relative">
+									<textarea
+										name="Letter"
+										id="message"
+										rows={8}
+										placeholder="Share your thoughts, gratitude, memories, or simply let them know you're thinking of them. What would you like to say?"
+										value={message}
+										onChange={handleMessageChange}
+										className="w-full px-4 py-3 bg-white/90 border border-stone-300/60 rounded-xl 
+                        focus:ring-2 focus:ring-amber-300 focus:border-amber-400 
+                        transition-all duration-200 placeholder-stone-400 text-stone-800
+                        font-light tracking-wide resize-none shadow-sm"
+									/>
+
+									{/* AI Enhancement Button */}
+									<div className="absolute bottom-3 right-3">
+										<button
+											type="button"
+											onClick={handleEnhanceWithAI}
+											disabled={
+												isEnhancing || !message.trim()
+											}
+											className="px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 
+                              hover:from-purple-600 hover:to-pink-600 
+                              disabled:from-gray-400 disabled:to-gray-400
+                              text-white text-xs font-medium rounded-lg
+                              shadow-sm hover:shadow-md transition-all duration-200
+                              disabled:cursor-not-allowed disabled:opacity-60
+                              flex items-center gap-1.5 transform hover:scale-105 active:scale-95"
+											title="Enhance your letter with AI"
+										>
+											{isEnhancing ? (
+												<>
+													<div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin"></div>
+													<span>Enhancing...</span>
+												</>
+											) : (
+												<>
+													<span>✨</span>
+													<span>AI Enhance</span>
+												</>
+											)}
+										</button>
+									</div>
+								</div>
 
 								{/* Character Count */}
 								<div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 text-sm">
@@ -361,7 +467,7 @@ export default function Home() {
 										Sending...
 									</>
 								) : (
-									<>Send Letter ✉️</>
+									<>Send Letter 📬</>
 								)}
 							</button>
 						</div>

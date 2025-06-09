@@ -64,7 +64,7 @@ export function generateLetterHTML({ letterTo, letterFrom, message }) {
         }
 
         .message {
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 400;
             line-height: 1.6;
             color: #3e1212;
