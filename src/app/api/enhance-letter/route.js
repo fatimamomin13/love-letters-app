@@ -32,15 +32,16 @@ Key guidelines:
 - Improve grammar, flow, and emotional expression
 - Add elegant transitions between thoughts
 - Enhance the romantic or heartfelt language without making it overly dramatic
-- Keep the length appropriate (aim for similar length, but can be slightly longer if it improves the message)
+- IMPORTANT: Keep the enhanced letter under 800 characters total
 - Make it feel more polished while staying authentic
 - Do not add any fake details or memories that weren't in the original
 - Return ONLY the enhanced letter content without any prefixes, explanations, or introductory text
+- Focus on quality improvements rather than length expansion
 
 Original letter from ${letterFrom} to ${letterTo}:
 "${message}"
 
-Enhanced letter:`;
+Enhanced letter (must be under 800 characters):`;
 
 		const result = await generateText({
 			model: deepinfra("meta-llama/Meta-Llama-3.1-70B-Instruct"),
@@ -71,6 +72,11 @@ Enhanced letter:`;
 		}
 
 		enhancedMessage = enhancedMessage.trim();
+
+		// Ensure the enhanced message doesn't exceed 800 characters
+		if (enhancedMessage.length > 800) {
+			enhancedMessage = enhancedMessage.substring(0, 797) + "...";
+		}
 
 		// Basic validation
 		if (!enhancedMessage || enhancedMessage.length < 20) {
