@@ -1,0 +1,5 @@
+@import 'tailwindcss';
+
+@theme {
+    --color-customBrown: #86705f;
+}
