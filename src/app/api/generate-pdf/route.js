@@ -1,23 +1,51 @@
 // Create this file: app/api/generate-pdf/route.js
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import puppeteerRegular from "puppeteer";
+import chromium from "@sparticuz/chromium";
 import { generateLetterHTML } from "../send-letter/letterTemplate";
 
 async function generatePDF({ letterTo, letterFrom, message }) {
 	let browser;
 	try {
-		// Launch browser
-		browser = await puppeteer.launch({
-			headless: true,
-			args: [
-				"--no-sandbox",
-				"--disable-setuid-sandbox",
-				"--disable-dev-shm-usage",
-				"--disable-accelerated-2d-canvas",
-				"--no-first-run",
-				"--no-zygote",
-				"--disable-gpu",
-			],
-		});
+		// Environment-specific browser configuration
+		const isProduction = process.env.NODE_ENV === "production";
+
+		if (isProduction) {
+			// Production (Vercel) - use puppeteer-core with chromium
+			const browserOptions = {
+				args: [
+					...chromium.args,
+					"--hide-scrollbars",
+					"--disable-web-security",
+					"--no-sandbox",
+					"--disable-setuid-sandbox",
+					"--disable-dev-shm-usage",
+					"--disable-accelerated-2d-canvas",
+					"--no-first-run",
+					"--no-zygote",
+					"--disable-gpu",
+				],
+				defaultViewport: chromium.defaultViewport,
+				executablePath: await chromium.executablePath(),
+				headless: chromium.headless,
+				ignoreHTTPSErrors: true,
+			};
+			browser = await puppeteer.launch(browserOptions);
+		} else {
+			// Development - use regular puppeteer
+			browser = await puppeteerRegular.launch({
+				headless: true,
+				args: [
+					"--no-sandbox",
+					"--disable-setuid-sandbox",
+					"--disable-dev-shm-usage",
+					"--disable-accelerated-2d-canvas",
+					"--no-first-run",
+					"--no-zygote",
+					"--disable-gpu",
+				],
+			});
+		}
 
 		const page = await browser.newPage();
 
