@@ -16,7 +16,7 @@ export default function Home() {
 	const [backgroundLoaded, setBackgroundLoaded] = useState(false);
 	const [isEnhancing, setIsEnhancing] = useState(false);
 
-	const MAX_CHARS = 800;
+	const MAX_CHARS = 750;
 	const MIN_CHARS = 200;
 
 	useEffect(() => {
