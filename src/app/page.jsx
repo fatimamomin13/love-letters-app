@@ -7,8 +7,6 @@ export default function Home() {
 	const [letterFrom, setLetterFrom] = useState("");
 	const [message, setMessage] = useState("");
 	const [email, setEmail] = useState("");
-	const [lastData, setLastData] = useState({});
-	const [blob, setBlob] = useState(null);
 	const [showPreview, setShowPreview] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isDownloadingFromPreview, setIsDownloadingFromPreview] =
@@ -29,7 +27,7 @@ export default function Home() {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setIsLoading(true);
-		setLastData({ letterTo, letterFrom, message, email });
+
 		try {
 			const res = await fetch("api/send-letter", {
 				method: "POST",
@@ -49,8 +47,13 @@ export default function Home() {
 			if (contentType === "application/pdf") {
 				const blobData = await res.blob();
 				if (blobData.size > 0) {
-					setBlob(blobData);
 					alert("Letter sent successfully!");
+
+					// Clear all form fields after successful send
+					setLetterTo("");
+					setLetterFrom("");
+					setMessage("");
+					setEmail("");
 				} else {
 					console.error("Received empty PDF blob");
 				}
@@ -195,7 +198,9 @@ export default function Home() {
 
 	const handleMessageChange = (e) => {
 		const value = e.target.value;
-		if (value.length <= MAX_CHARS) {
+		if (value.length > MAX_CHARS) {
+			setMessage(value.substring(0, MAX_CHARS));
+		} else {
 			setMessage(value);
 		}
 	};
