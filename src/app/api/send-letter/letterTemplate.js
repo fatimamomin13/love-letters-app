@@ -70,9 +70,13 @@ export function generateLetterHTML({ letterTo, letterFrom, message }) {
             color: #3e1212;
             text-align: left;
             font-family: "Dancing Script";
-            white-space: pre-wrap;
+            white-space: pre-line;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
             text-indent: 0;
-        }
+            max-width: 100%;
+           }
 
         .footer {
             position: absolute;
